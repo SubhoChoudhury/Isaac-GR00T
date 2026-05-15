@@ -166,6 +166,8 @@ class Gr00tN1d7Processor(BaseProcessor):
         # State augmentation
         exclude_state: bool = False,
         state_dropout_prob: float = 0.0,
+        state_noise_std: float = 0.0,
+        state_noise_keys: tuple[str, ...] | list[str] = ("arm",),
         # Normalization
         use_mean_std: bool = False,
         # Backward-compat params (stored but not actively used)
@@ -194,6 +196,8 @@ class Gr00tN1d7Processor(BaseProcessor):
         # State augmentation settings
         self.exclude_state = exclude_state
         self.state_dropout_prob = state_dropout_prob
+        self.state_noise_std = float(state_noise_std)
+        self.state_noise_keys = tuple(state_noise_keys) if state_noise_keys else ()
 
         self.letter_box_transform = letter_box_transform
 
@@ -499,6 +503,22 @@ class Gr00tN1d7Processor(BaseProcessor):
             embodiment_tag=embodiment_tag.value,
         )
 
+        # Add Gaussian noise to selected state keys (e.g., joint states) during training only.
+        # Applied AFTER state/action processing so relative action targets, which are computed
+        # from the raw (pre-normalization) state, remain noise-free.
+        if (
+            self.training
+            and self.state_noise_std > 0.0
+            and norm_state_dict
+        ):
+            for key in self.state_noise_keys:
+                if key in norm_state_dict:
+                    arr = norm_state_dict[key]
+                    noise = np.random.normal(
+                        loc=0.0, scale=self.state_noise_std, size=arr.shape
+                    ).astype(arr.dtype, copy=False)
+                    norm_state_dict[key] = arr + noise
+
         if normalized_actions:
             # Concatenate actions
             action_keys = self.modality_configs[embodiment_tag.value]["action"].modality_keys
@@ -690,6 +710,8 @@ class Gr00tN1d7Processor(BaseProcessor):
                 # State augmentation
                 "exclude_state": self.exclude_state,
                 "state_dropout_prob": self.state_dropout_prob,
+                "state_noise_std": self.state_noise_std,
+                "state_noise_keys": list(self.state_noise_keys),
             },
         }
         with open(main_config_file, "w") as f:
@@ -755,6 +777,8 @@ class Gr00tN1d7Processor(BaseProcessor):
                 "use_relative_action",
                 "exclude_state",
                 "state_dropout_prob",
+                "state_noise_std",
+                "state_noise_keys",
                 "use_mean_std",
                 "model_name",
                 "model_type",

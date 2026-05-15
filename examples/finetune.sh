@@ -21,6 +21,7 @@ OUTPUT_DIR=""
 EXPERIMENT_NAME=""
 WANDB_PROJECT=""
 STATE_DROPOUT_PROB=""
+STATE_NOISE_STD=""
 EXTRA_ARGS=()
 
 usage() {
@@ -69,6 +70,10 @@ while [ "$#" -gt 0 ]; do
             ;;
         --state-dropout-prob)
             STATE_DROPOUT_PROB="$2"
+            shift 2
+            ;;
+        --state-noise-std)
+            STATE_NOISE_STD="$2"
             shift 2
             ;;
         --save-only-model)
@@ -139,6 +144,9 @@ fi
 
 if [ -n "$STATE_DROPOUT_PROB" ]; then
     LAUNCH_CMD+=(--state_dropout_prob "$STATE_DROPOUT_PROB")
+fi
+if [ -n "$STATE_NOISE_STD" ]; then
+    LAUNCH_CMD+=(--state_noise_std "$STATE_NOISE_STD")
 fi
 if [ -n "${SAVE_ONLY_MODEL:-}" ]; then
     LAUNCH_CMD+=(--save_only_model)

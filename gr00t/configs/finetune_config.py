@@ -62,6 +62,20 @@ class FinetuneConfig:
     Dropout probability applied to state inputs for regularization during training.
     """
 
+    state_noise_std: float = 0.0
+    """
+    Gaussian noise stddev added to selected state keys (e.g., joint states) at training time.
+    Noise is applied to the normalized state AFTER state/action processing, so action targets
+    (including RELATIVE-action deltas computed from the raw state) are not corrupted.
+    Set to 0.0 to disable. Inference always sees the clean state.
+    """
+
+    state_noise_keys: tuple[str, ...] = ("arm",)
+    """
+    Which state keys receive Gaussian noise when `state_noise_std > 0`. Keys not listed
+    here (e.g. "sprayer") are left untouched. Defaults to ("arm",) for the spraying robot.
+    """
+
     # --- Data Augmentation ---
     random_rotation_angle: int | None = None
     """Maximum rotation angle (in degrees) for random rotation augmentation of input images."""

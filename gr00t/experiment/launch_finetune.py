@@ -78,6 +78,8 @@ if __name__ == "__main__":
     config.model.tune_projector = ft_config.tune_projector
     config.model.tune_diffusion_model = ft_config.tune_diffusion_model
     config.model.state_dropout_prob = ft_config.state_dropout_prob
+    config.model.state_noise_std = ft_config.state_noise_std
+    config.model.state_noise_keys = tuple(ft_config.state_noise_keys)
     config.model.random_rotation_angle = ft_config.random_rotation_angle
     config.model.color_jitter_params = ft_config.color_jitter_params
     if ft_config.extra_augmentation_config:
