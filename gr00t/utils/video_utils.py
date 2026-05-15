@@ -77,7 +77,7 @@ def _is_backend_available(backend: str) -> bool:
             return True
         except ImportError:
             return False
-    elif backend in ("ffmpeg", "opencv", "pyav", "torchvision_av"):
+    elif backend in ("ffmpeg", "opencv", "pyav", "torchvision_av", "av"):
         return True
     return False
 
@@ -372,6 +372,11 @@ def get_frames_by_indices(
         vr = decord.VideoReader(video_path, **video_backend_kwargs)
         frames = vr.get_batch(indices)
         return frames.asnumpy()
+    elif video_backend == "av":
+        container = av.open(video_path)
+        all_frames = [f.to_ndarray(format="rgb24") for f in container.decode(video=0)]
+        container.close()
+        return np.array(all_frames)[list(indices)]
     elif video_backend == "ffmpeg":
         return _extract_frames_ffmpeg(video_path, list(indices))
     elif video_backend == "opencv":

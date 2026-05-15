@@ -326,7 +326,7 @@ def main(args: ArgsConfig):
     dataset = LeRobotEpisodeLoader(
         dataset_path=args.dataset_path,
         modality_configs=modality,
-        video_backend="torchcodec",
+        video_backend="av",
         video_backend_kwargs=None,
     )
 
@@ -342,6 +342,12 @@ def main(args: ArgsConfig):
             continue
 
         logging.info(f"Running trajectory: {traj_id}")
+        if args.save_plot_path is not None:
+            plot_dir = Path(args.save_plot_path).expanduser()
+            plot_dir.mkdir(parents=True, exist_ok=True)
+            traj_plot_path = str(plot_dir / f"traj_{traj_id}.jpeg")
+        else:
+            traj_plot_path = None
         mse, mae = evaluate_single_trajectory(
             policy,
             dataset,
@@ -350,7 +356,7 @@ def main(args: ArgsConfig):
             args.modality_keys,
             steps=args.steps,
             action_horizon=args.action_horizon,
-            save_plot_path=args.save_plot_path,
+            save_plot_path=traj_plot_path,
         )
         logging.info(f"MSE for trajectory {traj_id}: {mse}, MAE: {mae}")
         all_mse.append(mse)

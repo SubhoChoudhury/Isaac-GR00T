@@ -117,7 +117,7 @@ class LeRobotEpisodeLoader:
         self,
         dataset_path: str | Path,
         modality_configs: dict[str, ModalityConfig],
-        video_backend: str = "torchcodec",
+        video_backend: str = "av",
         video_backend_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """
