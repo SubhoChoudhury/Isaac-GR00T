@@ -32,6 +32,7 @@ from gr00t.configs.base_config import Config
 # Use custom trainer that profiles data loading & forward times
 from gr00t.experiment.trainer import Gr00tTrainer, ProfCallback
 from gr00t.experiment.utils import BestMetricCheckpointCallback, CheckpointFormatCallback
+from gr00t.experiment.slack_callback import SlackNotificationCallback
 from gr00t.model import MODEL_REGISTRY
 from gr00t.utils.initial_actions import INITIAL_ACTIONS_FILENAME, save_initial_actions
 
@@ -256,6 +257,7 @@ def run(config: Config):
             processor_dir=processor_dir,
         )
     )
+    trainer.add_callback(SlackNotificationCallback())
 
     if config.training.save_best_eval_metric_name != "":
         trainer.add_callback(
