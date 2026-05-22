@@ -17,12 +17,12 @@ def _post(text: str):
 class SlackNotificationCallback(TrainerCallback):
     def on_train_begin(self, args, state, control, **kwargs):
         _post(
-            f":rocket: *GR00T Run 3 started* — undistorted base cam | state-noise-aug\n"
+            f":rocket: *GR00T Run 4 started* — albumentations online aug | state-noise-aug\n"
             f"Target: {args.max_steps:,} steps | Batch: {args.per_device_train_batch_size} | H100 NVL"
         )
 
     def on_log(self, args, state, control, logs=None, **kwargs):
-        if logs and state.global_step > 0 and state.global_step % 15000 == 0:
+        if logs and state.global_step > 0 and state.global_step % 100000 == 0:
             loss = logs.get("loss")
             lr = logs.get("learning_rate")
             if loss:
