@@ -439,6 +439,11 @@ def build_image_transformations_albumentations(
                 p=1.0,
             )
         )
+        # Tone-curve and per-channel shift to cover deployment lighting/WB drift
+        train_transform_list.append(A.RandomGamma(gamma_limit=(90, 140), p=0.5))
+        train_transform_list.append(
+            A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3)
+        )
 
     train_transform = A.ReplayCompose(train_transform_list, p=1.0)
 

@@ -282,6 +282,38 @@ class Gr00tTrainer(Trainer):
         return super().train(resume_from_checkpoint=resume_from_checkpoint, **kwargs)
 
     # ------------------------------------------------------------------
+    # NaN guard: zero gradients and skip optimizer update on bad batches
+    # ------------------------------------------------------------------
+
+    def training_step(self, model, inputs, num_items_in_batch=None):
+        loss = super().training_step(model, inputs, num_items_in_batch)
+        if torch.isnan(loss) or torch.isinf(loss):
+            self._nan_consecutive = getattr(self, "_nan_consecutive", 0) + 1
+            self._nan_total = getattr(self, "_nan_total", 0) + 1
+            logging.warning(
+                f"NaN/Inf loss at step {self.state.global_step} "
+                f"(consecutive={self._nan_consecutive}, total={self._nan_total}) — zeroing grads"
+            )
+            for p in model.parameters():
+                if p.grad is not None:
+                    p.grad.zero_()
+            try:
+                from gr00t.experiment.slack_callback import _post
+                _post(
+                    f":warning: NaN loss at step {self.state.global_step:,} "
+                    f"(#{self._nan_total} total, {self._nan_consecutive} consecutive) — grads zeroed"
+                )
+            except Exception:
+                pass
+            if self._nan_consecutive >= 5:
+                raise RuntimeError(
+                    f"Training aborted: {self._nan_consecutive} consecutive NaN losses at step {self.state.global_step}"
+                )
+        else:
+            self._nan_consecutive = 0
+        return loss
+
+    # ------------------------------------------------------------------
     # Loss / accuracy computation override
     # ------------------------------------------------------------------
 
