@@ -22,7 +22,7 @@ class SlackNotificationCallback(TrainerCallback):
         )
 
     def on_log(self, args, state, control, logs=None, **kwargs):
-        if logs and state.global_step > 0 and state.global_step % 15000 == 0:
+        if logs and state.global_step > 0 and state.global_step % 100000 == 0:
             loss = logs.get("loss")
             lr = logs.get("learning_rate")
             if loss:
