@@ -37,7 +37,7 @@ class TrainingConfig:
     weight_decay: float = 1e-5
     warmup_ratio: float = 0.05
     warmup_steps: int = 0  # this will override warmup_ratio
-    max_grad_norm: float = 0.5
+    max_grad_norm: float = 1.0
 
     # Optimizer choice (huggingface TrainingArguments.optim)
     # Options include: 'adamw_torch', 'adamw_torch_fused', 'paged_adamw_32bit',

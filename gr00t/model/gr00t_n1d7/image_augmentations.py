@@ -439,12 +439,6 @@ def build_image_transformations_albumentations(
                 p=1.0,
             )
         )
-        # Non-linear tone curve and per-channel offset — targets lighting and
-        # white-balance drift between training and deployment cameras (ported from pi05).
-        train_transform_list.append(A.RandomGamma(gamma_limit=(90, 140), p=0.5))
-        train_transform_list.append(
-            A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3)
-        )
 
     train_transform = A.ReplayCompose(train_transform_list, p=1.0)
 

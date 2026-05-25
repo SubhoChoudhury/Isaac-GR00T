@@ -41,7 +41,7 @@ spraying_config = {
     ),
     "language": ModalityConfig(
         delta_indices=[0],
-        modality_keys=["task"],
+        modality_keys=["annotation.human.task_description"],
     ),
 }
 
