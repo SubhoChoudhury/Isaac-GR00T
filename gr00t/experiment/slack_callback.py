@@ -1,3 +1,4 @@
+import math
 import os
 import traceback
 import requests
@@ -45,3 +46,43 @@ class SlackNotificationCallback(TrainerCallback):
         tb = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
         short = tb[-1500:] if len(tb) > 1500 else tb
         _post(f":x: *Training error* at step {state.global_step:,}:\n```{short}```")
+
+
+class GradExplosionGuardCallback(TrainerCallback):
+    """Stop training and notify Slack when gradient norm explodes.
+
+    A single spike above the threshold triggers a Slack warning.
+    Three consecutive spikes trigger a clean stop.
+    """
+
+    def __init__(self, explosion_factor: float = 20.0, max_consecutive: int = 3):
+        # grad_norm must exceed max_grad_norm * explosion_factor to count as explosion
+        self._explosion_factor = explosion_factor
+        self._max_consecutive = max_consecutive
+        self._consecutive = 0
+
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if not logs:
+            return
+        grad_norm = logs.get("grad_norm")
+        if grad_norm is None:
+            return
+        # Treat NaN grad_norm as explosion too
+        is_nan = isinstance(grad_norm, float) and math.isnan(grad_norm)
+        threshold = args.max_grad_norm * self._explosion_factor
+        if is_nan or grad_norm > threshold:
+            self._consecutive += 1
+            norm_str = "NaN" if is_nan else f"{grad_norm:.2f}"
+            _post(
+                f":boom: *Gradient explosion* at step {state.global_step:,} — "
+                f"grad_norm={norm_str} (threshold={threshold:.1f}) | "
+                f"consecutive: {self._consecutive}/{self._max_consecutive}"
+            )
+            if self._consecutive >= self._max_consecutive:
+                _post(
+                    f":octagonal_sign: *Training stopped* — {self._consecutive} consecutive "
+                    f"gradient explosions at step {state.global_step:,}"
+                )
+                control.should_training_stop = True
+        else:
+            self._consecutive = 0
