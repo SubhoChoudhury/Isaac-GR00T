@@ -37,12 +37,12 @@ class TrainingConfig:
     weight_decay: float = 1e-5
     warmup_ratio: float = 0.05
     warmup_steps: int = 0  # this will override warmup_ratio
-    max_grad_norm: float = 1.0
+    max_grad_norm: float = 0.5
 
     # Optimizer choice (huggingface TrainingArguments.optim)
     # Options include: 'adamw_torch', 'adamw_torch_fused', 'paged_adamw_32bit',
     # 'paged_adamw_8bit' (requires bitsandbytes), 'adafactor', etc.
-    optim: str = "adamw_torch_fused"
+    optim: str = "adamw_torch"
 
     start_from_checkpoint: Optional[str] = None
     skip_weight_loading: bool = False  # skip loading checkpoint weights (architecture only)
