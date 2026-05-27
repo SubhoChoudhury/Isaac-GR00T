@@ -243,7 +243,7 @@ def main() -> None:
         f"{DIM_NAMES[d]}:{cos_sims[d]:+.2f}" for d in range(9)
     )
     comment = (
-        f":microscope: *Open-loop eval — checkpoint-{args.step:,}*\n"
+        f":microscope: *Open-loop eval — checkpoint-{args.step:,}*  `#gr00t`\n"
         f"MAE: `{overall_mae:.4f}`  |  lat p50: `{np.median(lats):.0f}ms`\n"
         f"cos_sim per dim:  `{dim_lines}`"
     )
