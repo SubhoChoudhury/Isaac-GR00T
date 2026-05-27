@@ -125,3 +125,10 @@ class TrainingConfig:
 
     open_loop_eval_plot_indices: Optional[list[int]] = None
     """List of action indices to plot. If None, plots all indices."""
+
+    eval_episode_dir: Optional[str] = None
+    """Path to pi05-format episode dir for open-loop eval after each checkpoint save. None = disabled."""
+
+    eval_max_frames: int = 200
+    """Number of frames to evaluate per checkpoint."""
+

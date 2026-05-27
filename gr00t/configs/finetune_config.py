@@ -172,6 +172,17 @@ class FinetuneConfig:
     """If True, save only model weights (skip optimizer/scheduler/RNG states). Cannot resume training from these checkpoints."""
 
     skip_weight_loading: bool = False
+    # --- Checkpoint Eval ---
+    eval_episode_dir: str | None = None
+    """
+    Path to a pi05-format episode directory used for open-loop eval after each checkpoint save.
+    If None, checkpoint eval is disabled. Example:
+    /data/sim-cleaned/vla_pipeline_20260527_112811/final/run_20260502_033038_d51d/run_20260502_033038_d51d_job_000
+    """
+
+    eval_max_frames: int = 200
+    """Number of frames to evaluate per checkpoint. Default 200 (~15s of inference)."""
+
     """If True, skip loading model weights from base_model_path (architecture only).
     The processor (tokenizer/config) is still loaded from base_model_path.
     Useful for CI/testing to skip the slow checkpoint shard loading."""

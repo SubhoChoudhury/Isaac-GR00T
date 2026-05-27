@@ -116,5 +116,7 @@ if __name__ == "__main__":
 
     config.training.save_only_model = ft_config.save_only_model
     config.training.skip_weight_loading = ft_config.skip_weight_loading
+    config.training.eval_episode_dir = ft_config.eval_episode_dir
+    config.training.eval_max_frames  = ft_config.eval_max_frames
 
     run(config)

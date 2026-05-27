@@ -18,7 +18,7 @@ def _post(text: str):
 class SlackNotificationCallback(TrainerCallback):
     def on_train_begin(self, args, state, control, **kwargs):
         _post(
-            f":rocket: *GR00T Run 6 started* — cleaned-data-new | state-noise-aug + albumentations online\n"
+            f":rocket: *GR00T Run 7 started* — spraying-v7 (sim data) | state-noise-aug + albumentations + checkpoint eval\n"
             f"Target: {args.max_steps:,} steps | Batch: {args.per_device_train_batch_size} | H100 NVL"
         )
 
@@ -86,3 +86,55 @@ class GradExplosionGuardCallback(TrainerCallback):
                 control.should_training_stop = True
         else:
             self._consecutive = 0
+
+
+# ── Checkpoint eval callback ──────────────────────────────────────────────────
+
+import subprocess
+import sys
+
+
+# ── Checkpoint eval callback ──────────────────────────────────────────────────
+
+import subprocess
+import sys
+from pathlib import Path
+
+
+class CheckpointEvalCallback(TrainerCallback):
+    """After each checkpoint save, spawn gr00t_checkpoint_eval.py in the background.
+
+    The subprocess loads the saved checkpoint via Gr00tPolicy, runs open-loop
+    inference on a fixed eval episode, generates the 9-dim GT vs predicted
+    timeline plot, and posts it to Slack. Training is not blocked.
+
+    Requires env vars: SLACK_BOT_TOKEN and SLACK_CHANNEL_ID for image upload.
+    """
+
+    def __init__(self, eval_episode_dir: str, max_frames: int = 200):
+        self._eval_episode_dir = eval_episode_dir
+        self._max_frames       = max_frames
+        self._script = Path(__file__).resolve().parent / "gr00t_checkpoint_eval.py"
+
+    def on_save(self, args, state, control, **kwargs):
+        step     = state.global_step
+        ckpt_dir = Path(args.output_dir) / f"checkpoint-{step}"
+        out_dir  = Path(args.output_dir) / "eval_plots"
+        log_path = Path(args.output_dir) / f"eval_step{step:07d}.log"
+
+        if not ckpt_dir.exists():
+            _post(f":warning: Eval skipped — checkpoint-{step:,} dir not found at {ckpt_dir}")
+            return
+
+        cmd = [
+            sys.executable, str(self._script),
+            "--checkpoint-dir",   str(ckpt_dir),
+            "--eval-episode-dir", self._eval_episode_dir,
+            "--step",             str(step),
+            "--max-frames",       str(self._max_frames),
+            "--output-dir",       str(out_dir),
+        ]
+
+        log_f = open(log_path, "w")
+        subprocess.Popen(cmd, env=os.environ.copy(), stdout=log_f, stderr=subprocess.STDOUT)
+        _post(f":hourglass_flowing_sand: *Eval launched* for checkpoint-{step:,} — plot on Slack in ~90s")
