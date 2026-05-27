@@ -118,6 +118,8 @@ class CheckpointEvalCallback(TrainerCallback):
 
     def on_save(self, args, state, control, **kwargs):
         step     = state.global_step
+        if step % 30000 != 0:
+            return
         ckpt_dir = Path(args.output_dir) / f"checkpoint-{step}"
         out_dir  = Path(args.output_dir) / "eval_plots"
         log_path = Path(args.output_dir) / f"eval_step{step:07d}.log"
