@@ -18,7 +18,7 @@ def _post(text: str):
 class SlackNotificationCallback(TrainerCallback):
     def on_train_begin(self, args, state, control, **kwargs):
         _post(
-            f":rocket: *GR00T Run 7 started* — spraying-v7 (sim data) | state-noise-aug + albumentations + checkpoint eval\n"
+            f":rocket: *GR00T Run 8 started* — spraying-v7 (sim data) | state-noise-aug + albumentations (enabled) + checkpoint eval\n"
             f"Target: {args.max_steps:,} steps | Batch: {args.per_device_train_batch_size} | H100 NVL"
         )
 
